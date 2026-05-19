@@ -88,6 +88,12 @@ Main stages:
 - Run Container
 - Verify Health
 
+## Verified So Far
+- GitHub webhook reaches Jenkins through ngrok (`/github-webhook/` with `200 OK`).
+- Jenkins pipeline executes build and Trivy security scan successfully.
+- CI container uses host port `5001` to avoid conflict with local app port `5000`.
+- Manual and webhook-triggered runs are validated in local setup.
+
 ## Notes
 - Keep ngrok running while testing GitHub webhooks to local Jenkins.
 - If ngrok URL changes, update GitHub webhook payload URL.
