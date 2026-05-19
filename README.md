@@ -29,8 +29,8 @@ GitHub Push -> Webhook -> Jenkins Pipeline -> Docker Build -> Trivy Scan -> Kube
 - [x] Step 4: Git + GitHub Workflow
 - [x] Step 5: Jenkins Basic CI Pipeline
 - [x] Step 6: GitHub Webhook Auto Trigger
-- [ ] Step 7: Trivy Security Scanning
-- [ ] Step 8: Kubernetes with Minikube
+- [x] Step 7: Trivy Security Scanning
+- [x] Step 8: Kubernetes with Minikube
 - [ ] Step 9: Monitoring Stack
 - [ ] Step 10: Terraform Basics
 - [ ] Step 11: Ansible Automation
@@ -84,12 +84,44 @@ Pipeline file: `Jenkinsfile`
 Main stages:
 - Checkout Source
 - Build Docker Image
+- Trivy Security Scan
 - Run Container
 - Verify Health
+
+## Kubernetes Deployment (Step 8)
+Kubernetes manifests were added in `k8s/`:
+- `deployment.yaml`:
+  - Runs app as a managed Pod (`Deployment`)
+  - Adds readiness and liveness probes on `/health`
+- `service.yaml`:
+  - Exposes app using `NodePort` service
+  - Gives a stable access endpoint for the Pod
+
+Why this matters (vs plain Docker):
+- Docker `run` gives one local container.
+- Kubernetes adds orchestration: self-healing, scaling, and stable service networking.
+
+Commands used:
+```powershell
+minikube start
+minikube image load azure-monitoring-app:v1
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+kubectl get pods
+kubectl get svc
+minikube service azure-monitoring-app-service --url
+```
+
+## Verified So Far
+- GitHub webhook reaches Jenkins through ngrok (`/github-webhook/` with `200 OK`).
+- Jenkins pipeline executes build and Trivy security scan successfully.
+- CI container uses host port `5001` to avoid conflict with local app port `5000`.
+- Manual and webhook-triggered runs are validated in local setup.
+- Minikube deployment and service are working; app is reachable via `minikube service ... --url`.
 
 ## Notes
 - Keep ngrok running while testing GitHub webhooks to local Jenkins.
 - If ngrok URL changes, update GitHub webhook payload URL.
 
 ## Author
-Shaunak Suryawanshi
+Shaunak Suryawanshii

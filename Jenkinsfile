@@ -8,7 +8,7 @@ pipeline {
         IMAGE_NAME = 'azure-monitoring-app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         CONTAINER_NAME = 'azure-monitoring-app-ci'
-        APP_PORT = '5000'
+        APP_PORT = '5001'
     }
 
     stages {
@@ -25,8 +25,27 @@ pipeline {
                         if (isUnix()) {
                             sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
                         } else {
-                            powershell 'docker build -t $env:IMAGE_NAME:$env:IMAGE_TAG .'
+                            powershell '$img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"; docker build -t $img .'
                         }
+                    }
+                }
+            }
+        }
+
+        stage('Trivy Security Scan') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'command -v trivy >/dev/null 2>&1 || (echo "Trivy is not installed on Jenkins agent." && exit 1)'
+                        sh 'trivy image --severity CRITICAL --exit-code 1 --no-progress ${IMAGE_NAME}:${IMAGE_TAG}'
+                    } else {
+                        powershell '''
+                        $trivy = "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\AquaSecurity.Trivy_Microsoft.Winget.Source_8wekyb3d8bbwe\\trivy.exe"
+                        if (-not (Test-Path $trivy)) { Write-Error "Trivy executable not found at expected path."; exit 1 }
+                        & $trivy --version
+                        $img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"
+                        & $trivy image --severity CRITICAL --exit-code 1 --no-progress $img
+                        '''
                     }
                 }
             }
@@ -39,8 +58,8 @@ pipeline {
                         sh 'docker rm -f ${CONTAINER_NAME} || true'
                         sh 'docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:5000 ${IMAGE_NAME}:${IMAGE_TAG}'
                     } else {
-                        powershell 'docker rm -f $env:CONTAINER_NAME; if ($LASTEXITCODE -ne 0) { exit 0 }'
-                        powershell 'docker run -d --name $env:CONTAINER_NAME -p $env:APP_PORT`:5000 $env:IMAGE_NAME`:$env:IMAGE_TAG'
+                        powershell 'docker rm -f $env:CONTAINER_NAME 2>$null | Out-Null; exit 0'
+                        powershell '$img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"; docker run -d --name $env:CONTAINER_NAME -p ${env:APP_PORT}:5000 $img'
                     }
                 }
             }
