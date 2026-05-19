@@ -8,7 +8,7 @@ pipeline {
         IMAGE_NAME = 'azure-monitoring-app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
         CONTAINER_NAME = 'azure-monitoring-app-ci'
-        APP_PORT = '5000'
+        APP_PORT = '5001'
     }
 
     stages {
@@ -58,7 +58,7 @@ pipeline {
                         sh 'docker rm -f ${CONTAINER_NAME} || true'
                         sh 'docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:5000 ${IMAGE_NAME}:${IMAGE_TAG}'
                     } else {
-                        powershell 'docker rm -f $env:CONTAINER_NAME; if ($LASTEXITCODE -ne 0) { exit 0 }'
+                        powershell 'docker rm -f $env:CONTAINER_NAME 2>$null | Out-Null; exit 0'
                         powershell '$img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"; docker run -d --name $env:CONTAINER_NAME -p ${env:APP_PORT}:5000 $img'
                     }
                 }
