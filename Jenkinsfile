@@ -25,7 +25,7 @@ pipeline {
                         if (isUnix()) {
                             sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
                         } else {
-                            powershell 'docker build -t $env:IMAGE_NAME:$env:IMAGE_TAG .'
+                            powershell '$img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"; docker build -t $img .'
                         }
                     }
                 }
@@ -40,7 +40,7 @@ pipeline {
                         sh 'trivy image --severity CRITICAL --exit-code 1 --no-progress ${IMAGE_NAME}:${IMAGE_TAG}'
                     } else {
                         powershell 'if (-not (Get-Command trivy -ErrorAction SilentlyContinue)) { Write-Error "Trivy is not installed on Jenkins agent."; exit 1 }'
-                        powershell 'trivy image --severity CRITICAL --exit-code 1 --no-progress $env:IMAGE_NAME`:$env:IMAGE_TAG'
+                        powershell '$img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"; trivy image --severity CRITICAL --exit-code 1 --no-progress $img'
                     }
                 }
             }
@@ -54,7 +54,7 @@ pipeline {
                         sh 'docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:5000 ${IMAGE_NAME}:${IMAGE_TAG}'
                     } else {
                         powershell 'docker rm -f $env:CONTAINER_NAME; if ($LASTEXITCODE -ne 0) { exit 0 }'
-                        powershell 'docker run -d --name $env:CONTAINER_NAME -p $env:APP_PORT`:5000 $env:IMAGE_NAME`:$env:IMAGE_TAG'
+                        powershell '$img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"; docker run -d --name $env:CONTAINER_NAME -p ${env:APP_PORT}:5000 $img'
                     }
                 }
             }
