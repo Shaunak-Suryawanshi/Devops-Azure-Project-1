@@ -94,5 +94,3 @@ Main stages:
 
 ## Author
 Shaunak Suryawanshi
-
-Webhook test update: verifying automatic Jenkins trigger from GitHub push.
