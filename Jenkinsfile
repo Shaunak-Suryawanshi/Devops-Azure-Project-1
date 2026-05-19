@@ -39,8 +39,13 @@ pipeline {
                         sh 'command -v trivy >/dev/null 2>&1 || (echo "Trivy is not installed on Jenkins agent." && exit 1)'
                         sh 'trivy image --severity CRITICAL --exit-code 1 --no-progress ${IMAGE_NAME}:${IMAGE_TAG}'
                     } else {
-                        powershell 'if (-not (Get-Command trivy -ErrorAction SilentlyContinue)) { Write-Error "Trivy is not installed on Jenkins agent."; exit 1 }'
-                        powershell '$img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"; trivy image --severity CRITICAL --exit-code 1 --no-progress $img'
+                        powershell '''
+                        $trivy = "C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WinGet\\Packages\\AquaSecurity.Trivy_Microsoft.Winget.Source_8wekyb3d8bbwe\\trivy.exe"
+                        if (-not (Test-Path $trivy)) { Write-Error "Trivy executable not found at expected path."; exit 1 }
+                        & $trivy --version
+                        $img = "$env:IMAGE_NAME`:$env:IMAGE_TAG"
+                        & $trivy image --severity CRITICAL --exit-code 1 --no-progress $img
+                        '''
                     }
                 }
             }
