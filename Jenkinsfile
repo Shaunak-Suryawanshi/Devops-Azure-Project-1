@@ -32,6 +32,20 @@ pipeline {
             }
         }
 
+        stage('Trivy Security Scan') {
+            steps {
+                script {
+                    if (isUnix()) {
+                        sh 'command -v trivy >/dev/null 2>&1 || (echo "Trivy is not installed on Jenkins agent." && exit 1)'
+                        sh 'trivy image --severity CRITICAL --exit-code 1 --no-progress ${IMAGE_NAME}:${IMAGE_TAG}'
+                    } else {
+                        powershell 'if (-not (Get-Command trivy -ErrorAction SilentlyContinue)) { Write-Error "Trivy is not installed on Jenkins agent."; exit 1 }'
+                        powershell 'trivy image --severity CRITICAL --exit-code 1 --no-progress $env:IMAGE_NAME`:$env:IMAGE_TAG'
+                    }
+                }
+            }
+        }
+
         stage('Run Container') {
             steps {
                 script {

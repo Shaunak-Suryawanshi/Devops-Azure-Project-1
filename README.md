@@ -29,7 +29,7 @@ GitHub Push -> Webhook -> Jenkins Pipeline -> Docker Build -> Trivy Scan -> Kube
 - [x] Step 4: Git + GitHub Workflow
 - [x] Step 5: Jenkins Basic CI Pipeline
 - [x] Step 6: GitHub Webhook Auto Trigger
-- [ ] Step 7: Trivy Security Scanning
+- [x] Step 7: Trivy Security Scanning
 - [ ] Step 8: Kubernetes with Minikube
 - [ ] Step 9: Monitoring Stack
 - [ ] Step 10: Terraform Basics
@@ -84,6 +84,7 @@ Pipeline file: `Jenkinsfile`
 Main stages:
 - Checkout Source
 - Build Docker Image
+- Trivy Security Scan
 - Run Container
 - Verify Health
 
