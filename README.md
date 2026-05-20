@@ -31,7 +31,7 @@ GitHub Push -> Webhook -> Jenkins Pipeline -> Docker Build -> Trivy Scan -> Kube
 - [x] Step 6: GitHub Webhook Auto Trigger
 - [x] Step 7: Trivy Security Scanning
 - [x] Step 8: Kubernetes with Minikube
-- [ ] Step 9: Monitoring Stack
+- [x] Step 9: Monitoring Stack
 - [ ] Step 10: Terraform Basics
 - [ ] Step 11: Ansible Automation
 - [ ] Step 12: Azure Deployment
@@ -112,12 +112,40 @@ kubectl get svc
 minikube service azure-monitoring-app-service --url
 ```
 
+## Monitoring Stack (Step 9)
+Monitoring manifests were added in `monitoring/`:
+- Prometheus:
+  - `prometheus-configmap.yaml`
+  - `prometheus-deployment.yaml`
+  - `prometheus-service.yaml`
+- Grafana:
+  - `grafana-datasource-configmap.yaml`
+  - `grafana-deployment.yaml`
+  - `grafana-service.yaml`
+
+Application metrics added:
+- `/metrics` endpoint in Flask app using `prometheus-client`
+- Custom metric: `app_http_requests_total` with endpoint label
+
+Why this matters for interviews:
+- Shows you can deploy and observe workloads, not just run them
+- Demonstrates practical observability workflow:
+  - instrument app -> scrape metrics -> visualize in Grafana
+
+Useful queries:
+```promql
+app_http_requests_total
+sum by (endpoint) (app_http_requests_total)
+rate(app_http_requests_total[1m])
+```
+
 ## Verified So Far
 - GitHub webhook reaches Jenkins through ngrok (`/github-webhook/` with `200 OK`).
 - Jenkins pipeline executes build and Trivy security scan successfully.
 - CI container uses host port `5001` to avoid conflict with local app port `5000`.
 - Manual and webhook-triggered runs are validated in local setup.
 - Minikube deployment and service are working; app is reachable via `minikube service ... --url`.
+- Prometheus and Grafana are running in Minikube and application metrics are queryable.
 
 ## Notes
 - Keep ngrok running while testing GitHub webhooks to local Jenkins.
