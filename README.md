@@ -32,9 +32,9 @@ GitHub Push -> Webhook -> Jenkins Pipeline -> Docker Build -> Trivy Scan -> Kube
 - [x] Step 7: Trivy Security Scanning
 - [x] Step 8: Kubernetes with Minikube
 - [x] Step 9: Monitoring Stack
-- [ ] Step 10: Terraform Basics
-- [ ] Step 11: Ansible Automation
-- [ ] Step 12: Azure Deployment
+- [x] Step 10: Terraform Basics
+- [x] Step 11: Ansible Automation
+- [x] Step 12: Azure Deployment
 - [ ] Step 13: Final Architecture Review
 
 ## Repository Structure
@@ -138,6 +138,81 @@ app_http_requests_total
 sum by (endpoint) (app_http_requests_total)
 rate(app_http_requests_total[1m])
 ```
+
+## Terraform on Azure (Step 10)
+Terraform files in `terraform/` are used to provision Azure infrastructure from code:
+- `main.tf`:
+  - Resource Group
+  - Virtual Network + Subnet
+  - Public IP
+  - NSG + SSH/App rules
+  - NIC + Linux VM
+- `variables.tf`:
+  - reusable input variables
+- `outputs.tf`:
+  - public IP, VM name, SSH hint
+- `terraform.tfvars`:
+  - environment-specific values (kept out of git)
+
+What was provisioned:
+- Resource Group: `myVm_group`
+- VM: `myVm`
+- Region: `Central India`
+- Size: `Standard_B2ats_v2`
+- Image: Ubuntu 24.04 LTS
+
+Important workflow:
+```powershell
+terraform init
+terraform validate
+terraform plan
+terraform apply
+```
+
+## Ansible Automation (Step 11)
+Ansible is used to configure the Terraform-created Azure VM over SSH:
+- `ansible/inventory.ini`:
+  - target host, SSH user, key path
+- `ansible/playbook.yml`:
+  - installs and enables Docker on VM
+- `ansible/deploy-app.yml`:
+  - copies app files
+  - builds Docker image on VM
+  - runs app container
+  - verifies `/health`
+
+Result:
+- Docker installed automatically on VM
+- App deployed automatically via Ansible
+- Health check passed (`{"health":"ok"}`)
+
+## Azure Deployment Validation (Step 12)
+Deployment path validated end-to-end:
+- Terraform created Azure infra
+- Ansible configured VM
+- Ansible deployed app container
+- NSG rule opened app port `5000`
+- App reachable from public IP: `http://<public_ip>:5000/health`
+
+Operational notes:
+- Keep SSH (22) open for automation/admin access
+- App port can be restricted to trusted source IPs later for hardening
+
+## Security and Secret Safety
+No private credentials should be committed to git.
+
+Current safety rules:
+- `.gitignore` blocks:
+  - `terraform.tfvars`, `*.tfvars`, `*.tfplan`
+  - `*.pem`, `*.ppk`, `id_rsa`, `myVm_key`
+- Terraform uses SSH public key value only
+- Private SSH key stays local/WSL only
+
+Do not commit:
+- private keys
+- cloud access tokens
+- passwords in plain text
+- state files with sensitive values
 
 ## Verified So Far
 - GitHub webhook reaches Jenkins through ngrok (`/github-webhook/` with `200 OK`).

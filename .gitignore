@@ -13,6 +13,9 @@ venv/
 *.tfstate
 *.tfstate.*
 .terraform/
+terraform.tfvars
+*.tfvars
+*.tfplan
 
 # Logs
 *.log
@@ -26,3 +29,11 @@ Thumbs.db
 # Env files
 .env
 .env.*
+
+# Keys / credentials
+*.pem
+*.ppk
+id_rsa
+id_rsa.pub
+myVm_key
+myVm_key.pub
