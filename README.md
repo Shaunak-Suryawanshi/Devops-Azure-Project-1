@@ -12,6 +12,9 @@ This project helps prepare for:
 ## Architecture Flow
 GitHub Push -> Webhook -> Jenkins Pipeline -> Docker Build -> Trivy Scan -> Kubernetes Deploy -> Prometheus Monitoring -> Grafana Dashboards -> Terraform Azure Infra -> Ansible VM Configuration
 
+## Architecture Diagram
+[![Azure Infrastructure Automation & Monitoring Diagram](docs/architecture/diagram.png)](docs/architecture/diagram.png)
+
 ## Tech Stack
 - Cloud: Azure
 - DevOps: Git, GitHub, Jenkins, Webhooks, Docker
